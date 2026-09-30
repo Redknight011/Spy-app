@@ -1,3 +1,4 @@
+
 const express = require('express');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
@@ -24,27 +25,26 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Redknight123";
 
 function checkAuth(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ error: 'no token - use Bearer <token>' });
+  if (!auth) return res.status(401).json({ error: 'no token' });
   try { jwt.verify(auth.split(' ')[1], SECRET); next(); }
   catch { return res.status(401).json({ error: 'invalid token' }); }
 }
 
 let fileDB = [];
 
-app.post('/api/get-token', (req, res) => {
+app.post('/get-token', (req, res) => {
   if (req.body.password!== ADMIN_PASSWORD) return res.status(401).json({ error: 'wrong password' });
   const token = jwt.sign({ user: 'redknight' }, SECRET, { expiresIn: '30d' });
-  res.json({ token, note: "Use this token in header: Authorization: Bearer <token>" });
+  res.json({ token });
 });
 
-app.post('/api/upload', checkAuth, upload.single('file'), (req, res) => {
+app.post('/upload', checkAuth, upload.single('file'), (req, res) => {
   const data = { originalName: req.file.originalname, url: req.file.path, public_id: req.file.filename, date: new Date().toISOString() };
   fileDB.push(data);
-  res.json({ message: 'Permanent upload success', data });
+  res.json({ message: 'Success', data });
 });
 
-app.get('/api/files', checkAuth, (req, res) => res.json(fileDB));
-app.get('/', (req,res) => res.json({ status: "Redknight Cloud Ready", cloud: "sannsxn2" }));
+app.get('/files', checkAuth, (req, res) => res.json(fileDB));
+app.get('/', (req,res) => res.json({ status: "Redknight Cloud Ready - Fixed!" }));
 
 module.exports = app;
-if (require.main === module) app.listen(3000, ()=>console.log("3000"));
